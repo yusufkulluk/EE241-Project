@@ -1,0 +1,57 @@
+`timescale 1ns / 1ps
+
+
+
+module SecuritySystem_finitestate(
+    input wire clk,        // Clock signal
+    input wire reset,      // Reset signal
+    input wire in1,        // Wi-Fi input
+    input wire in2,        // Sensor input
+    output reg output_signal   // Output signal indicating state
+);
+
+    // State encoding
+    parameter OFF = 1'b0;
+    parameter ON  = 1'b1;
+
+    // State registers
+    reg current_state, next_state;
+
+    // State transition logic
+    always @(posedge clk or posedge reset) begin
+        if (reset) begin
+            current_state <= OFF;  // Default to OFF state
+        end else begin
+            current_state <= next_state;
+        end
+    end
+
+    // Next state logic
+    always @(*) begin
+        case (current_state)
+            OFF: begin
+                if (in1 == 0 && in2 == 1) // Wi-Fi = 0, Sensor = 1
+                    next_state = ON;
+                else
+                    next_state = OFF;
+            end
+            ON: begin
+                if (in1 == 0 && in2 == 1) // Wi-Fi = 0, Sensor = 1
+                    next_state = OFF;
+                else
+                    next_state = ON;
+            end
+            default: next_state = OFF; // Default state
+        endcase
+    end
+
+    // Output logic
+    always @(current_state) begin
+        case (current_state)
+            OFF: output_signal = 1'b0; // Output is 0 when OFF
+            ON:  output_signal = 1'b1; // Output is 1 when ON
+            default: output_signal = 1'b0;
+        endcase
+    end
+
+endmodule
